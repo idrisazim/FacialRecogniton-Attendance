@@ -2,7 +2,9 @@ import cv2
 import face_recognition
 import os
 import pickle
-from datetime import datetime
+#from datetime import datetime
+import tkinter as tk
+from tkinter import simpledialog
 
 # Function to load face encodings from a file
 def load_encodings():
@@ -18,16 +20,27 @@ def save_encodings(encodings):
     with open('encodings.pickle', 'wb') as f:
         pickle.dump(encodings, f)
 
+# Function to get user input using Tkinter
+def get_user_input():
+    return simpledialog.askstring("Input", "Yeni kişinin ismini giriniz:")
+
 # Load existing face encodings
 face_encodings = load_encodings()
 
 # Set to store names of faces for which attendance has been logged
 attendance_logged_faces = set()
 
+# Get the file name using Tkinter
+root = tk.Tk()
+root.withdraw()  # Hide the main window
+
+fileName = simpledialog.askstring("Input", "Dosya tarihini giriniz:")
+
 # Open a video capture object (0 for the default camera)
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Set width
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) # Set height
+
 while True:
     # Read a frame from the video capture
     ret, frame = cap.read()
@@ -47,7 +60,7 @@ while True:
             name = list(face_encodings.keys())[first_match_index]
         else:
             # If the face is unknown, prompt the user to enter a name
-            name = input("Enter the name for this face: ")
+            name = get_user_input()
             face_encodings[name] = face_encoding
             save_encodings(face_encodings)
 
@@ -58,7 +71,7 @@ while True:
 
         # Log attendance if the face is not in the set
         if name not in attendance_logged_faces:
-            with open('attendance.txt', 'a') as log_file:
+            with open(fileName + ' tarihi yoklamasi.txt', 'a') as log_file:
                 log_file.write(f"{name}\n")
             attendance_logged_faces.add(name)
 
